@@ -4,6 +4,9 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.common.util.impl.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,14 +18,30 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import ch.qos.logback.classic.Logger;
+
 @SpringBootApplication
 @RestController
 public class MiddlewareApplication {
 
+	//private Logger logger = LoggerFactory.getLogger(MiddlewareApplication.class);
+
+
+	@Autowired
+	TodoRepository repo;
+
+	@Value("${my.property:unset}")
+	String internalProperty;
+
 	ArrayList<String> userList = new ArrayList<String>(List.of("Niclas","Lukas"));
 	
 
-	
+	@PostMapping("/setProperty/{paramProperty}")
+	public String setProperty(@PathVariable String paramProperty){
+		//logger.info("Old property{} New Property {}", internalProperty, paramProperty);
+		return internalProperty;
+	}
+
 
 	@GetMapping("/")
 	public String sayHello(){
@@ -51,7 +70,13 @@ public class MiddlewareApplication {
 		
 	}
 	
-
+	@PostMapping("/todo/{todo}")
+	public String createTodo(@PathVariable String todo){
+		Todo newTodo = new Todo();
+		newTodo.todo = todo;
+		repo.save(newTodo);
+		return null;
+	}
 
 	public static void main(String[] args) {
 		SpringApplication.run(MiddlewareApplication.class, args);
